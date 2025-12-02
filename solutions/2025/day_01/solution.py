@@ -24,7 +24,7 @@ class Solution(StrSplitSolution):
                 zeroes += 1
         return zeroes
 
-    # @answer(1234)
+    # @answer(5923)
     def part_2(self) -> int:
         pos = 50
         zeroes = 0
