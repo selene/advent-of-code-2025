@@ -14,9 +14,7 @@ class Solution(StrSplitSolution):
     def part_1(self) -> int:
         total = 0
         
-        print(f"input: {self.input}")
         for bank in self.input:
-            print(f"  bank: {bank}")
             high1 = int(bank[-2])
             high2 = int(bank[-1])
             for d_str in bank[:-2][::-1]:
@@ -26,7 +24,6 @@ class Solution(StrSplitSolution):
                         high2 = high1
                     high1 = digit
             jolts = high1 * 10 + high2
-            print(f"    jolts: {jolts}")
             total += jolts
         
         return total
@@ -35,17 +32,36 @@ class Solution(StrSplitSolution):
     def part_2(self) -> int:
         total = 0
         
-        for bank in self.input:
+        # Approach:
+        # Get the last 12 digits of the bank
+        # Starting from the digit before that (bank[-12]), compare against the
+        # leftmost digit
+        # If it's higher:
+        #   Save the new digit as the leftmost
+        #   Compare the previous leftmost digit against the next leftmost
+        #   Keep bumping digits down as long as they're higher than the old one
+        # Stop bumping if we find one that's not higher
+        for bank_str in self.input:
+            bank = [int(b) for b in bank_str]
             print(f"  bank: {bank}")
-            highs = [int(d) for d in bank[-13:]]
-            for d_str in bank[:-13][::-1]:
-                digit = int(d_str)
+            highs = list(range(len(bank) - 12, len(bank)))
+            remaining_bank = bank[:-12]
+            print(f"    reversed bank after last 12 digits removed: {bank[:-12][::-1]}")
+            for offset, digit in enumerate(remaining_bank[::-1]):
+                # print(f"    digit={digit}, offset={offset}")
+                # print(f"    high indexes={highs}")
+                # print(f"    high values ={[bank[h] for h in highs]}")
+                idx = len(bank) - 12 - offset - 1
+                # print(f"   idx={idx}")
                 old_highs = [*highs]
                 for i in range(0, 12):
-                    if digit >= highs[i]:
-                        highs[i] = digit
-                        digit = old_highs[i]
-            jolts = int(''.join([str(h) for h in highs]))
+                    if digit >= bank[highs[i]]:
+                        highs[i] = idx
+                        digit = bank[old_highs[i]]
+                        idx = old_highs[i]
+                    else:
+                        break
+            jolts = int(''.join([str(bank[h]) for h in highs]))
             print(f"    jolts: {jolts}")
             total += jolts
         return total
