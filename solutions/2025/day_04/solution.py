@@ -3,7 +3,6 @@
 # puzzle prompt: https://adventofcode.com/2025/day/4
 
 from collections import defaultdict, namedtuple
-from copy import deepcopy
 
 
 from ...base import StrSplitSolution, answer
@@ -26,12 +25,33 @@ DIRECTIONS = [
     Pos(-1, 1),  # up-right /
 ]
 
-   
-def print_map(grid):
-    for r in range(0, max(grid.keys())+1):
-        for c in range(0, max(grid[r].keys())+1):
-            print(grid[r][c], end='')
-        print()
+class Grid:
+    def __init__(self, input_chars):
+        self.grid = defaultdict(lambda: defaultdict(lambda: TileContent.FLOOR))
+        
+        for ridx, line in enumerate(input_chars):
+            for cidx, char in enumerate(line):
+                self.grid[ridx][cidx] = char
+        
+        self.height = len(input_chars)
+        self.width = len(input_chars)
+    
+    def print_grid(self):
+        for r in range(0, max(self.grid.keys())+1):
+            for c in range(0, max(self.grid[r].keys())+1):
+                print(self.grid[r][c], end='')
+            print()
+    
+    def at(self, row, col):
+        return self.grid[row][col]
+    
+    def set_tile(self, row, col, tile):
+        self.grid[row][col] = tile
+    
+    def tiles(self):
+        for ridx in range(self.height):
+            for cidx in range(self.width):
+                yield self.grid[ridx][cidx], ridx, cidx
 
 
 class Solution(StrSplitSolution):
@@ -40,50 +60,41 @@ class Solution(StrSplitSolution):
     separator = "\n"
 
 
-    def make_grid(self):
-        grid = defaultdict(lambda: defaultdict(lambda: TileContent.FLOOR))
-        
-        for ridx, line in enumerate(self.input):
-            for cidx, char in enumerate(line):
-                grid[ridx][cidx] = char
-        
-        height = len(self.input)
-        width = len(self.input[0])
-        return grid, height, width
+    def load_grid(self):
+        return Grid(self.input)
     
-    def find_removable_rolls(self, grid, height, width):
+    def find_removable_rolls(self, grid: Grid):
         removables = []
-        for ridx in range(height):
-            for cidx in range(width):
-                if grid[ridx][cidx] == TileContent.FLOOR:
-                    continue
-                roll_count = 0
-                for d in DIRECTIONS:
-                    neighbor = grid[d.row + ridx][d.col + cidx]
-                    if neighbor == TileContent.ROLL:
-                        roll_count += 1
-                if roll_count < 4:
-                    removables.append(Pos(ridx, cidx))
+        for tile, ridx, cidx in grid.tiles():
+            if tile == TileContent.FLOOR:
+                continue
+            roll_count = 0
+            for d in DIRECTIONS:
+                neighbor = grid.at(d.row + ridx, d.col + cidx)
+                if neighbor == TileContent.ROLL:
+                    roll_count += 1
+            if roll_count < 4:
+                removables.append(Pos(ridx, cidx))
         return removables
                     
 
     # @answer(1489)
     def part_1(self) -> int:
-        grid, height, width = self.make_grid()
+        grid = self.load_grid()
         
-        return len(self.find_removable_rolls(grid, height, width))
+        return len(self.find_removable_rolls(grid))
 
     # @answer(8890)
     def part_2(self) -> int:
-        grid, height, width = self.make_grid()
+        grid = self.load_grid()
 
         removed = 0
         while True:
-            removables = self.find_removable_rolls(grid, height, width)
+            removables = self.find_removable_rolls(grid)
             if not removables:
                 break
             for pos in removables:
-                grid[pos.row][pos.col] = TileContent.FLOOR
+                grid.set_tile(pos.row, pos.col, TileContent.FLOOR)
                 removed += 1
         
         return removed
