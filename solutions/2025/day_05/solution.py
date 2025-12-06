@@ -85,9 +85,18 @@ class Solution(StrSplitSolution):
         
         return valid_count
 
-    # @answer(1234)
+    @answer(352340558684863)
     def part_2(self) -> int:
-        pass
+        ranges, ids = self.parse_input()
+        
+        ranges = sorted(ranges)
+        merged_ranges = self.merge_ranges(ranges)
+        
+        valid_count = 0
+        for rng in merged_ranges:
+            valid_count += rng[1] - rng[0] + 1
+        
+        return valid_count
 
     # @answer((1234, 4567))
     # def solve(self) -> tuple[int, int]:
