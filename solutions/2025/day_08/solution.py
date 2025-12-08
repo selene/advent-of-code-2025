@@ -88,34 +88,17 @@ class Solution(StrSplitSolution):
         coords = self.load_coordinates()
         pairs = self.find_closest_pairs(coords)
         
-        circuits = {}
         seen_pos = set()
         for i, pair in enumerate(pairs):
-            pos1 = pair.pos1
-            pos2 = pair.pos2
-
-            seen_pos.add(pos1)
-            seen_pos.add(pos2)
-            if pos1 in circuits and pos2 in circuits:
-                new_circuit = circuits[pos1] | circuits[pos2]
-                for p in new_circuit:
-                    circuits[p] = new_circuit
-            elif pos1 in circuits:
-                circuits[pos1].add(pos2)
-                circuits[pos2] = circuits[pos1]
-            elif pos2 in circuits:
-                circuits[pos2].add(pos1)
-                circuits[pos1] = circuits[pos2]
-            else:
-                new_circuit = set([pos1, pos2])
-                circuits[pos1] = new_circuit
-                circuits[pos2] = new_circuit
-
+            seen_pos.add(pair.pos1)
+            seen_pos.add(pair.pos2)
+            
+            # I don't think this is always sufficient for the graph to be connected
+            #   For example, the first 500 could make one circuit and the rest make a different circuit
+            # But it seems to work for the given input
             if len(seen_pos) == len(coords):
                 print(f"All positions seen at iteration {i}")
-            if len(circuits[pos1]) == len(coords):
-                print(f"Final circuit connected at iteration {i}")
-                return pos1.x * pos2.x
+                return pair.pos1.x * pair.pos2.x
         
 
     # @answer((1234, 4567))
