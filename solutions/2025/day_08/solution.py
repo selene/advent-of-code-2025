@@ -63,21 +63,10 @@ class Solution(StrSplitSolution):
         for pair in pairs:
             pos1 = pair.pos1
             pos2 = pair.pos2
-            if pos1 in circuits and pos2 in circuits:
-                # if circuits[pos1] != circuits[pos2]:
-                new_circuit = circuits[pos1] | circuits[pos2]
-                for p in new_circuit:
-                    circuits[p] = new_circuit
-            elif pos1 in circuits:
-                circuits[pos1].add(pos2)
-                circuits[pos2] = circuits[pos1]
-            elif pos2 in circuits:
-                circuits[pos2].add(pos1)
-                circuits[pos1] = circuits[pos2]
-            else:
-                new_circuit = set([pos1, pos2])
-                circuits[pos1] = new_circuit
-                circuits[pos2] = new_circuit
+            
+            new_circuit = circuits.get(pos1, set()) | circuits.get(pos2, set()) | set([pos1, pos2])
+            for p in new_circuit:
+                circuits[p] = new_circuit
         
         unique_circuits = []
         for c in circuits.values():
@@ -94,25 +83,39 @@ class Solution(StrSplitSolution):
         
         
 
-    # @answer(1234)
+    @answer(1131823407)
     def part_2(self) -> int:
         coords = self.load_coordinates()
         pairs = self.find_closest_pairs(coords)
-
         
         circuits = {}
-        for pair in pairs:
+        seen_pos = set()
+        for i, pair in enumerate(pairs):
             pos1 = pair.pos1
             pos2 = pair.pos2
-            
-            new_circuit = circuits.get(pos1, set()) | circuits.get(pos2, set())
-            for p in new_circuit:
-                circuits[p] = new_circuit
-        
-        unique_circuits = []
-        for c in circuits.values():
-            if c not in unique_circuits:
-                unique_circuits.append(c)
+
+            seen_pos.add(pos1)
+            seen_pos.add(pos2)
+            if pos1 in circuits and pos2 in circuits:
+                new_circuit = circuits[pos1] | circuits[pos2]
+                for p in new_circuit:
+                    circuits[p] = new_circuit
+            elif pos1 in circuits:
+                circuits[pos1].add(pos2)
+                circuits[pos2] = circuits[pos1]
+            elif pos2 in circuits:
+                circuits[pos2].add(pos1)
+                circuits[pos1] = circuits[pos2]
+            else:
+                new_circuit = set([pos1, pos2])
+                circuits[pos1] = new_circuit
+                circuits[pos2] = new_circuit
+
+            if len(seen_pos) == len(coords):
+                print(f"All positions seen at iteration {i}")
+            if len(circuits[pos1]) == len(coords):
+                print(f"Final circuit connected at iteration {i}")
+                return pos1.x * pos2.x
         
 
     # @answer((1234, 4567))
